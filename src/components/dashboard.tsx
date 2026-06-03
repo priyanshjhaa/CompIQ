@@ -52,6 +52,7 @@ export function Dashboard() {
     yearsExperience: 0,
   });
   const [formStatus, setFormStatus] = useState<string>("");
+  const [formTone, setFormTone] = useState<"idle" | "success" | "warning" | "error">("idle");
 
   const filteredRows = useMemo(() => {
     const query = filters.query.trim().toLowerCase();
@@ -99,6 +100,20 @@ export function Dashboard() {
   const roleOptions = unique(salarySubmissions.map((row) => row.role)).sort();
   const levelOptions = unique(salarySubmissions.map((row) => row.level)).sort();
   const locationOptions = unique(salarySubmissions.map((row) => row.location)).sort();
+  const companyComparison = companies
+    .map((company) => {
+      const rows = salarySubmissions.filter((row) => row.companyId === company.id);
+      return {
+        name: company.name,
+        medianUsd: median(rows.map((row) => row.totalCompUsd)),
+        sampleSize: rows.length,
+      };
+    })
+    .sort((a, b) => b.medianUsd - a.medianUsd);
+  const maxCompanyMedian = Math.max(
+    ...companyComparison.map((company) => company.medianUsd),
+    1,
+  );
 
   function setFilter<K extends keyof SalaryFilters>(key: K, value: SalaryFilters[K]) {
     setFilters((current) => ({ ...current, [key]: value }));
@@ -115,6 +130,7 @@ export function Dashboard() {
   function submitDraft() {
     const errors = validateSubmission(draft);
     if (errors.length > 0) {
+      setFormTone("error");
       setFormStatus(errors[0]);
       return;
     }
@@ -122,6 +138,7 @@ export function Dashboard() {
     const built = buildSubmission(draft);
     const duplicate = isLikelyDuplicate(draft);
 
+    setFormTone(duplicate ? "warning" : "success");
     setFormStatus(
       duplicate
         ? "Likely duplicate detected. Backend will return 409 with the matching cohort."
@@ -473,7 +490,7 @@ export function Dashboard() {
         </Section>
 
         <Section title="Compensation Visualizations" eyebrow="Frontend polish">
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-3">
             <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4 shadow-2xl shadow-black/20">
               <h3 className="font-semibold text-zinc-50">Top normalized packages</h3>
               <div className="mt-5 grid gap-4">
@@ -489,6 +506,20 @@ export function Dashboard() {
                       detail={formatUsdCompact(row.totalCompUsd)}
                     />
                   ))}
+              </div>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4 shadow-2xl shadow-black/20">
+              <h3 className="font-semibold text-zinc-50">Company comparison</h3>
+              <div className="mt-5 grid gap-4">
+                {companyComparison.map((company) => (
+                  <Bar
+                    key={company.name}
+                    label={company.name}
+                    value={company.medianUsd}
+                    max={maxCompanyMedian}
+                    detail={`${formatUsdCompact(company.medianUsd)} · ${company.sampleSize} samples`}
+                  />
+                ))}
               </div>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4 shadow-2xl shadow-black/20">
@@ -587,6 +618,17 @@ export function Dashboard() {
                     setDraft((current) => ({ ...current, stock: Number(value) }))
                   }
                 />
+                <TextInput
+                  label="Years of experience"
+                  type="number"
+                  value={draft.yearsExperience || ""}
+                  onChange={(value) =>
+                    setDraft((current) => ({
+                      ...current,
+                      yearsExperience: Number(value),
+                    }))
+                  }
+                />
               </div>
               <button
                 type="button"
@@ -605,8 +647,23 @@ export function Dashboard() {
                 <li>Likely duplicate rows return 409.</li>
               </ul>
               {formStatus ? (
-                <div className="mt-4 rounded-md border border-[#44d7b6]/30 bg-[#44d7b6]/10 p-3 text-sm text-[#b7f8e9]">
-                  {formStatus}
+                <div
+                  className={`mt-4 rounded-md border p-3 text-sm ${
+                    formTone === "success"
+                      ? "border-[#44d7b6]/30 bg-[#44d7b6]/10 text-[#b7f8e9]"
+                      : formTone === "warning"
+                        ? "border-[#e4f222]/30 bg-[#e4f222]/10 text-[#f4ff9d]"
+                        : "border-red-400/30 bg-red-500/10 text-red-200"
+                  }`}
+                >
+                  <p className="font-medium">
+                    {formTone === "success"
+                      ? "Submission ready"
+                      : formTone === "warning"
+                        ? "Review duplicate"
+                        : "Fix validation"}
+                  </p>
+                  <p className="mt-1 text-sm opacity-90">{formStatus}</p>
                 </div>
               ) : null}
             </div>
