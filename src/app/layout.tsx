@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/components/auth-provider";
+import { isNeonAuthConfigured } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
   title: "CompIQ | Compensation Intelligence",
@@ -13,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full bg-[#050506] text-zinc-50">{children}</body>
+    <html lang="en" className="h-full antialiased dark" style={{ colorScheme: "dark" }}>
+      <body className="min-h-full bg-[#050506] text-zinc-50"><AuthProvider configured={isNeonAuthConfigured}>{children}</AuthProvider></body>
     </html>
   );
 }

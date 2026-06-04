@@ -25,11 +25,11 @@ export default async function CompanyPage({
   ).sort((a, b) => b[1] - a[1]);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_20%_0%,rgba(139,147,255,0.16),transparent_28%),#050506]">
+    <main className="app-gradient-flow min-h-screen">
       <section className="border-b border-white/10">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <Link
-            href="/"
+            href="/dashboard"
             className="text-sm font-semibold text-[#e4f222] underline decoration-white/20 underline-offset-4"
           >
             Back to dashboard
@@ -63,7 +63,7 @@ export default async function CompanyPage({
               <Stat
                 label="Sample size"
                 value={`${summary.sampleSize}`}
-                detail="Mock-backed API contract"
+                detail="Database-backed API contract"
               />
             </div>
           </div>

@@ -5,14 +5,14 @@ export default function ResearchPage() {
   const researchRows = listResearchRows();
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_18%_0%,rgba(139,147,255,0.16),transparent_28%),#050506] text-zinc-50">
-      <header className="border-b border-white/10 bg-[#050506]/80 backdrop-blur-xl">
+    <main className="app-gradient-flow min-h-screen text-zinc-50">
+      <header className="border-b border-white/10 bg-[#050506]/70 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex items-center gap-2">
             <span className="grid h-6 w-6 place-items-center rounded-md border border-white/10 bg-white/[0.06] text-[11px] font-semibold text-[#e4f222]">C</span>
             <span className="text-sm font-semibold text-zinc-100">CompIQ</span>
           </Link>
-          <Link href="/" className="text-sm font-medium text-zinc-400 hover:text-zinc-100">Dashboard</Link>
+          <Link href="/dashboard" className="text-sm font-medium text-zinc-400 hover:text-zinc-100">Dashboard</Link>
         </div>
       </header>
 

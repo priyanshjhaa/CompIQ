@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@neondatabase/auth/ui/tailwind";
 
 :root {
   --background: #050506;
@@ -25,4 +26,62 @@ body {
 
 * {
   box-sizing: border-box;
+}
+
+
+.app-gradient-flow {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 28rem),
+    #050506;
+}
+
+.app-gradient-flow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(312deg, transparent 8%, rgba(68, 215, 182, 0.1) 34%, rgba(139, 147, 255, 0.24) 54%, transparent 72%),
+    linear-gradient(328deg, transparent 18%, rgba(228, 242, 34, 0.1) 42%, rgba(68, 215, 182, 0.18) 58%, transparent 76%),
+    radial-gradient(ellipse 88% 64% at 96% 92%, rgba(139, 147, 255, 0.34), transparent 56%),
+    radial-gradient(ellipse 72% 52% at 82% 76%, rgba(68, 215, 182, 0.22), transparent 60%);
+  filter: blur(30px) saturate(1.18);
+  opacity: 0.95;
+  transform: translate3d(0, 0, 0);
+  animation: gradient-flow-drift 20s ease-in-out infinite alternate;
+}
+
+.app-gradient-flow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(315deg, transparent 0, rgba(5, 5, 6, 0.1) 34%, rgba(5, 5, 6, 0.7) 72%, #050506 100%);
+  background-size: 72px 72px, 72px 72px, auto;
+  mask-image: linear-gradient(315deg, transparent 0%, rgba(0, 0, 0, 0.86) 32%, rgba(0, 0, 0, 0.72) 70%, transparent 100%);
+  opacity: 0.72;
+}
+
+@keyframes gradient-flow-drift {
+  from {
+    transform: translate3d(1.5vw, 1rem, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(-2vw, -1.25rem, 0) scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-gradient-flow::before {
+    animation: none;
+  }
 }

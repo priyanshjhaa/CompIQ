@@ -1,6 +1,6 @@
 export default function CompanyLoading() {
   return (
-    <main className="min-h-screen bg-[#050506] text-zinc-50">
+    <main className="app-gradient-flow min-h-screen text-zinc-50">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="h-5 w-32 animate-pulse rounded-md bg-white/10" />
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">

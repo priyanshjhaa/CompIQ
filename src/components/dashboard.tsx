@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { UserMenu } from "@/components/user-menu";
 import {
   buildSubmission,
   formatMoney,
@@ -33,7 +34,7 @@ const defaultFilters: SalaryFilters = {
   market: "All",
 };
 
-export function Dashboard() {
+export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) {
   const [filters, setFilters] = useState<SalaryFilters>(defaultFilters);
   const [sortKey, setSortKey] = useState<SortKey>("totalCompUsd");
   const [selectedIds, setSelectedIds] = useState<string[]>(["s2", "s5"]);
@@ -177,32 +178,35 @@ export function Dashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_18%_0%,rgba(139,147,255,0.18),transparent_28%),radial-gradient(circle_at_82%_8%,rgba(68,215,182,0.12),transparent_24%),#050506]">
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-[#050506]/80 backdrop-blur-xl">
+    <main className="app-gradient-flow min-h-screen">
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-[#050506]/70 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex items-center gap-2">
             <span className="grid h-6 w-6 place-items-center rounded-md border border-white/10 bg-white/[0.06] text-[11px] font-semibold text-[#e4f222]">
               C
             </span>
             <span className="text-sm font-semibold text-zinc-100">CompIQ</span>
           </Link>
           <nav className="hidden items-center gap-5 text-sm text-zinc-500 md:flex">
-            <a href="#explorer" className="hover:text-zinc-100">
+            <a href="/dashboard#explorer" className="hover:text-zinc-100">
               Explorer
             </a>
-            <a href="#compare" className="hover:text-zinc-100">
+            <a href="/dashboard#compare" className="hover:text-zinc-100">
               Compare
             </a>
-            <a href="#research" className="hover:text-zinc-100">
+            <a href="/dashboard#research" className="hover:text-zinc-100">
               Research
             </a>
           </nav>
-          <a
-            href="#submit"
-            className="rounded-md border border-white/10 bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-950 transition hover:bg-white"
-          >
-            Add salary
-          </a>
+          <div className="flex items-center gap-3">
+            <a
+              href="/dashboard#submit"
+              className="rounded-md border border-white/10 bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-950 transition hover:bg-white"
+            >
+              Add salary
+            </a>
+            {showUserMenu ? <UserMenu /> : null}
+          </div>
         </div>
       </header>
 
@@ -222,13 +226,13 @@ export function Dashboard() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
-                href="#explorer"
+                href="/dashboard#explorer"
                 className="rounded-md bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-white"
               >
                 Explore salaries
               </a>
               <a
-                href="#compare"
+                href="/dashboard#compare"
                 className="rounded-md border border-white/10 bg-white/[0.035] px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-white/20 hover:bg-white/[0.06]"
               >
                 Compare levels
