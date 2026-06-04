@@ -1,22 +1,25 @@
 import { NextResponse } from "next/server";
-import { getCompanyDetail } from "@/lib/data-access";
+import { DATA_SOURCE, findCompanyDetail } from "@/lib/data-access";
+import type { CompanyDetailResponse } from "@/lib/types";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
-  const detail = await getCompanyDetail(slug);
+  const detail = findCompanyDetail(slug);
 
   if (!detail) {
     return NextResponse.json({ errors: ["Company not found."] }, { status: 404 });
   }
 
-  return NextResponse.json({
+  const response: CompanyDetailResponse = {
     data: detail,
     meta: {
-      source: "mock",
+      source: DATA_SOURCE,
       nextBackendStep: "Fetch company, salary rows, and derived bands via Prisma.",
     },
-  });
+  };
+
+  return NextResponse.json(response);
 }

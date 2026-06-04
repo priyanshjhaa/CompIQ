@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import {
-  buildSubmission,
-  filterSalaries,
-  isLikelyDuplicate,
-  validateSubmission,
-} from "@/lib/compensation";
-import { salarySubmissions } from "@/lib/mock-data";
-import type { SalaryFilters, SortKey, SubmissionDraft } from "@/lib/types";
+import { DATA_SOURCE, ingestSalaryDraft, listSalaries } from "@/lib/data-access";
+import type {
+  SalaryFilters,
+  SalaryIngestionRequest,
+  SalaryIngestionResponse,
+  SalaryListResponse,
+  SortKey,
+} from "@/lib/types";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -20,45 +20,36 @@ export async function GET(request: Request) {
     market: (searchParams.get("market") as SalaryFilters["market"]) ?? "All",
   };
   const sortKey = (searchParams.get("sort") as SortKey) ?? "totalCompUsd";
-  const rows = filterSalaries(salarySubmissions, filters, sortKey);
+  const rows = listSalaries(filters, sortKey);
 
-  return NextResponse.json({
+  const response: SalaryListResponse = {
     data: rows,
     meta: {
       total: rows.length,
-      source: "mock",
-      nextBackendStep: "Replace salarySubmissions with Prisma query filters.",
+      source: DATA_SOURCE,
+      nextBackendStep: "Replace data-access internals with Prisma query filters.",
     },
-  });
+  };
+
+  return NextResponse.json(response);
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as SubmissionDraft;
-  const errors = validateSubmission(body);
+  const body = (await request.json()) as SalaryIngestionRequest;
+  const result = ingestSalaryDraft(body);
 
-  if (errors.length > 0) {
-    return NextResponse.json({ errors }, { status: 400 });
+  if (!result.ok) {
+    return NextResponse.json(result.error, { status: result.status });
   }
 
-  if (isLikelyDuplicate(body)) {
-    return NextResponse.json(
-      {
-        errors: ["Likely duplicate salary submission."],
-        code: "DUPLICATE_SUBMISSION",
-      },
-      { status: 409 },
-    );
-  }
-
-  return NextResponse.json(
-    {
-      data: buildSubmission(body),
-      meta: {
-        persisted: false,
-        source: "mock",
-        nextBackendStep: "Persist using Prisma once DATABASE_URL is configured.",
-      },
+  const response: SalaryIngestionResponse = {
+    data: result.data,
+    meta: {
+      persisted: false,
+      source: DATA_SOURCE,
+      nextBackendStep: "Persist using Prisma once DATABASE_URL is configured.",
     },
-    { status: 201 },
-  );
+  };
+
+  return NextResponse.json(response, { status: 201 });
 }

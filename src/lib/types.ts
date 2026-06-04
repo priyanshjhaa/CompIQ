@@ -73,3 +73,73 @@ export type SubmissionDraft = {
   stock?: number;
   yearsExperience: number;
 };
+
+
+export type ApiMeta = {
+  source: "mock" | "database";
+  total?: number;
+  persisted?: boolean;
+  nextBackendStep?: string;
+};
+
+export type ApiSuccess<T> = {
+  data: T;
+  meta: ApiMeta;
+};
+
+export type ApiError = {
+  errors: string[];
+  code?: string;
+};
+
+export type SalaryListResponse = ApiSuccess<SalarySubmission[]>;
+
+export type SalaryIngestionRequest = SubmissionDraft;
+
+export type SalaryIngestionResponse = ApiSuccess<
+  SubmissionDraft & {
+    bonus: number;
+    stock: number;
+    totalComp: number;
+    totalCompUsd: number;
+  }
+>;
+
+export type CompanyListResponse = ApiSuccess<CompanySummary[]>;
+
+export type CompanyDetail = {
+  summary: CompanySummary;
+  rows: SalarySubmission[];
+  levelBands: Array<{
+    level: string;
+    levelRank: number;
+    medianUsd: number;
+    sampleSize: number;
+  }>;
+};
+
+export type CompanyDetailResponse = ApiSuccess<CompanyDetail>;
+
+export type ComparisonInsight = {
+  highestTotal: SalarySubmission;
+  mostCashHeavy: SalarySubmission;
+};
+
+export type ComparisonResponse = ApiSuccess<{
+  rows: SalarySubmission[];
+  insight: ComparisonInsight;
+}>;
+
+export type FilterOptions = {
+  companies: string[];
+  roles: string[];
+  levels: string[];
+  locations: string[];
+};
+
+export type DashboardData = {
+  companies: Company[];
+  salaries: SalarySubmission[];
+  researchRows: ResearchRow[];
+  filterOptions: FilterOptions;
+};

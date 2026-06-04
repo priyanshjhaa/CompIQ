@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { researchRows } from "@/lib/mock-data";
+import { listResearchRows } from "@/lib/data-access";
 
 export default function ResearchPage() {
+  const researchRows = listResearchRows();
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_18%_0%,rgba(139,147,255,0.16),transparent_28%),#050506] text-zinc-50">
       <header className="border-b border-white/10 bg-[#050506]/80 backdrop-blur-xl">

@@ -10,7 +10,7 @@ import {
   median,
   validateSubmission,
 } from "@/lib/compensation";
-import { companies, researchRows, salarySubmissions } from "@/lib/mock-data";
+import { getDashboardData, listSalaries } from "@/lib/data-access";
 import type {
   Currency,
   Market,
@@ -31,10 +31,6 @@ const defaultFilters: SalaryFilters = {
   market: "All",
 };
 
-function unique<T>(values: T[]) {
-  return Array.from(new Set(values));
-}
-
 export function Dashboard() {
   const [filters, setFilters] = useState<SalaryFilters>(defaultFilters);
   const [sortKey, setSortKey] = useState<SortKey>("totalCompUsd");
@@ -53,56 +49,30 @@ export function Dashboard() {
   });
   const [formStatus, setFormStatus] = useState<string>("");
   const [formTone, setFormTone] = useState<"idle" | "success" | "warning" | "error">("idle");
+  const { companies, salaries, researchRows, filterOptions } = getDashboardData();
 
-  const filteredRows = useMemo(() => {
-    const query = filters.query.trim().toLowerCase();
-
-    return salarySubmissions
-      .filter((row) => {
-        const searchable = [
-          row.company,
-          row.role,
-          row.level,
-          row.location,
-          row.market,
-        ]
-          .join(" ")
-          .toLowerCase();
-
-        return (
-          (!query || searchable.includes(query)) &&
-          (!filters.company || row.company === filters.company) &&
-          (!filters.role || row.role === filters.role) &&
-          (!filters.level || row.level === filters.level) &&
-          (!filters.location || row.location === filters.location) &&
-          (filters.currency === "All" || row.currency === filters.currency) &&
-          (filters.market === "All" || row.market === filters.market)
-        );
-      })
-      .sort((a, b) => {
-        if (sortKey === "company") return a.company.localeCompare(b.company);
-        if (sortKey === "levelRank") return b.levelRank - a.levelRank;
-        return b[sortKey] - a[sortKey];
-      });
-  }, [filters, sortKey]);
+  const filteredRows = useMemo(
+    () => listSalaries(filters, sortKey),
+    [filters, sortKey],
+  );
 
   const selectedRows = selectedIds
-    .map((id) => salarySubmissions.find((row) => row.id === id))
+    .map((id) => salaries.find((row) => row.id === id))
     .filter(Boolean) as SalarySubmission[];
 
   const maxTotal = Math.max(...filteredRows.map((row) => row.totalCompUsd), 1);
-  const globalRows = salarySubmissions.filter((row) => row.market === "Global");
-  const indiaRows = salarySubmissions.filter((row) => row.market === "India");
-  const topCompany = [...salarySubmissions].sort(
+  const globalRows = salaries.filter((row) => row.market === "Global");
+  const indiaRows = salaries.filter((row) => row.market === "India");
+  const topCompany = [...salaries].sort(
     (a, b) => b.totalCompUsd - a.totalCompUsd,
   )[0];
 
-  const roleOptions = unique(salarySubmissions.map((row) => row.role)).sort();
-  const levelOptions = unique(salarySubmissions.map((row) => row.level)).sort();
-  const locationOptions = unique(salarySubmissions.map((row) => row.location)).sort();
+  const roleOptions = filterOptions.roles;
+  const levelOptions = filterOptions.levels;
+  const locationOptions = filterOptions.locations;
   const companyComparison = companies
     .map((company) => {
-      const rows = salarySubmissions.filter((row) => row.companyId === company.id);
+      const rows = salaries.filter((row) => row.companyId === company.id);
       return {
         name: company.name,
         medianUsd: median(rows.map((row) => row.totalCompUsd)),
@@ -136,7 +106,7 @@ export function Dashboard() {
     }
 
     const built = buildSubmission(draft);
-    const duplicate = isLikelyDuplicate(draft);
+    const duplicate = isLikelyDuplicate(salaries, draft);
 
     setFormTone(duplicate ? "warning" : "success");
     setFormStatus(
@@ -451,7 +421,7 @@ export function Dashboard() {
         <Section title="Company Intelligence" eyebrow="Database-backed page contract">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {companies.map((company) => {
-              const rows = salarySubmissions.filter((row) => row.companyId === company.id);
+              const rows = salaries.filter((row) => row.companyId === company.id);
               const med = median(rows.map((row) => row.totalCompUsd));
               return (
                 <Link
@@ -494,7 +464,7 @@ export function Dashboard() {
             <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4 shadow-2xl shadow-black/20">
               <h3 className="font-semibold text-zinc-50">Top normalized packages</h3>
               <div className="mt-5 grid gap-4">
-                {[...salarySubmissions]
+                {[...salaries]
                   .sort((a, b) => b.totalCompUsd - a.totalCompUsd)
                   .slice(0, 6)
                   .map((row) => (

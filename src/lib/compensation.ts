@@ -1,5 +1,5 @@
-import { companies, salarySubmissions } from "./mock-data";
 import type {
+  Company,
   CompanySummary,
   SalaryFilters,
   SalarySubmission,
@@ -91,10 +91,13 @@ export function filterSalaries(
     });
 }
 
-export function getCompanySummaries(): CompanySummary[] {
+export function getCompanySummaries(
+  companies: Company[],
+  rows: SalarySubmission[],
+): CompanySummary[] {
   return companies.map((company) => {
-    const rows = salarySubmissions.filter((row) => row.companyId === company.id);
-    const roleCounts = rows.reduce<Record<string, number>>((acc, row) => {
+    const companyRows = rows.filter((row) => row.companyId === company.id);
+    const roleCounts = companyRows.reduce<Record<string, number>>((acc, row) => {
       acc[row.role] = (acc[row.role] ?? 0) + 1;
       return acc;
     }, {});
@@ -103,25 +106,31 @@ export function getCompanySummaries(): CompanySummary[] {
       Object.entries(roleCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ??
       "Not enough data";
 
-    const highest = [...rows].sort((a, b) => b.levelRank - a.levelRank)[0];
+    const highest = [...companyRows].sort((a, b) => b.levelRank - a.levelRank)[0];
 
     return {
       ...company,
-      sampleSize: rows.length,
-      medianTotalUsd: median(rows.map((row) => row.totalCompUsd)),
+      sampleSize: companyRows.length,
+      medianTotalUsd: median(companyRows.map((row) => row.totalCompUsd)),
       highestLevel: highest?.level ?? "N/A",
       topRole,
-      locations: Array.from(new Set(rows.map((row) => row.location))),
+      locations: Array.from(new Set(companyRows.map((row) => row.location))),
     };
   });
 }
 
-export function getCompanySummary(slug: string) {
-  return getCompanySummaries().find((company) => company.slug === slug);
+export function getCompanySummary(
+  companies: Company[],
+  rows: SalarySubmission[],
+  slug: string,
+) {
+  return getCompanySummaries(companies, rows).find(
+    (company) => company.slug === slug,
+  );
 }
 
-export function getCompanyRows(slug: string) {
-  return salarySubmissions.filter((row) => row.companySlug === slug);
+export function getCompanyRows(rows: SalarySubmission[], slug: string) {
+  return rows.filter((row) => row.companySlug === slug);
 }
 
 export function groupMedianByLevel(rows: SalarySubmission[]) {
@@ -165,11 +174,11 @@ export function validateSubmission(draft: SubmissionDraft) {
   return errors;
 }
 
-export function isLikelyDuplicate(draft: SubmissionDraft) {
+export function isLikelyDuplicate(rows: SalarySubmission[], draft: SubmissionDraft) {
   const normalized = normalizeCompanyName(draft.company);
   const total = calculateTotalComp(draft);
 
-  return salarySubmissions.some(
+  return rows.some(
     (row) =>
       normalizeCompanyName(row.company) === normalized &&
       row.role.toLowerCase() === draft.role.toLowerCase() &&
