@@ -4,7 +4,7 @@ import type { CompanyListResponse } from "@/lib/types";
 
 export async function GET() {
   const response: CompanyListResponse = {
-    data: listCompanies(),
+    data: await listCompanies(),
     meta: {
       source: DATA_SOURCE,
       nextBackendStep: "Group salary submissions by company with Prisma.",

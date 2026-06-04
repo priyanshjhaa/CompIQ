@@ -4,7 +4,7 @@ import type { ComparisonResponse } from "@/lib/types";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const result = compareSalaryRows(searchParams.getAll("id"));
+  const result = await compareSalaryRows(searchParams.getAll("id"));
 
   if (!result) {
     return NextResponse.json(

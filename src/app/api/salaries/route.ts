@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     market: (searchParams.get("market") as SalaryFilters["market"]) ?? "All",
   };
   const sortKey = (searchParams.get("sort") as SortKey) ?? "totalCompUsd";
-  const rows = listSalaries(filters, sortKey);
+  const rows = await listSalaries(filters, sortKey);
 
   const response: SalaryListResponse = {
     data: rows,
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const body = (await request.json()) as SalaryIngestionRequest;
-  const result = ingestSalaryDraft(body);
+  const result = await ingestSalaryDraft(body);
 
   if (!result.ok) {
     return NextResponse.json(result.error, { status: result.status });
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
   const response: SalaryIngestionResponse = {
     data: result.data,
     meta: {
-      persisted: false,
+      persisted: result.persisted,
       source: DATA_SOURCE,
       nextBackendStep: "Persist using Prisma once DATABASE_URL is configured.",
     },

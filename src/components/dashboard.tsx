@@ -1,19 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   buildSubmission,
   formatMoney,
   formatUsdCompact,
+  filterSalaries,
   isLikelyDuplicate,
   median,
   validateSubmission,
 } from "@/lib/compensation";
-import { getDashboardData, listSalaries } from "@/lib/data-access";
 import type {
+  CompanySummary,
   Currency,
   Market,
+  ResearchRow,
   SalaryFilters,
   SalarySubmission,
   SortKey,
@@ -49,11 +51,57 @@ export function Dashboard() {
   });
   const [formStatus, setFormStatus] = useState<string>("");
   const [formTone, setFormTone] = useState<"idle" | "success" | "warning" | "error">("idle");
-  const { companies, salaries, researchRows, filterOptions } = getDashboardData();
+  const [salaries, setSalaries] = useState<SalarySubmission[]>([]);
+  const [companies, setCompanies] = useState<CompanySummary[]>([]);
+  const [researchRows, setResearchRows] = useState<ResearchRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadDashboardData() {
+      try {
+        setIsLoading(true);
+        setLoadError("");
+        const [salaryResponse, companyResponse, researchResponse] = await Promise.all([
+          fetch("/api/salaries"),
+          fetch("/api/companies"),
+          fetch("/api/research"),
+        ]);
+
+        if (!salaryResponse.ok || !companyResponse.ok || !researchResponse.ok) {
+          throw new Error("Unable to load dashboard data.");
+        }
+
+        const [salaryJson, companyJson, researchJson] = await Promise.all([
+          salaryResponse.json(),
+          companyResponse.json(),
+          researchResponse.json(),
+        ]);
+
+        if (!active) return;
+        setSalaries(salaryJson.data ?? []);
+        setCompanies(companyJson.data ?? []);
+        setResearchRows(researchJson.data ?? []);
+      } catch (error) {
+        if (!active) return;
+        setLoadError(error instanceof Error ? error.message : "Unable to load dashboard data.");
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    }
+
+    loadDashboardData();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filteredRows = useMemo(
-    () => listSalaries(filters, sortKey),
-    [filters, sortKey],
+    () => filterSalaries(salaries, filters, sortKey),
+    [salaries, filters, sortKey],
   );
 
   const selectedRows = selectedIds
@@ -67,9 +115,18 @@ export function Dashboard() {
     (a, b) => b.totalCompUsd - a.totalCompUsd,
   )[0];
 
-  const roleOptions = filterOptions.roles;
-  const levelOptions = filterOptions.levels;
-  const locationOptions = filterOptions.locations;
+  const roleOptions = useMemo(
+    () => Array.from(new Set(salaries.map((row) => row.role))).sort(),
+    [salaries],
+  );
+  const levelOptions = useMemo(
+    () => Array.from(new Set(salaries.map((row) => row.level))).sort(),
+    [salaries],
+  );
+  const locationOptions = useMemo(
+    () => Array.from(new Set(salaries.map((row) => row.location))).sort(),
+    [salaries],
+  );
   const companyComparison = companies
     .map((company) => {
       const rows = salaries.filter((row) => row.companyId === company.id);
@@ -191,8 +248,8 @@ export function Dashboard() {
             />
             <Stat
               label="Highest package"
-              value={formatUsdCompact(topCompany.totalCompUsd)}
-              detail={`${topCompany.company} ${topCompany.level}`}
+              value={topCompany ? formatUsdCompact(topCompany.totalCompUsd) : "$0K"}
+              detail={topCompany ? `${topCompany.company} ${topCompany.level}` : "Waiting for API"}
             />
           </div>
         </div>
@@ -219,6 +276,16 @@ export function Dashboard() {
         <div id="explorer" />
         <Section title="Salary Explorer" eyebrow="Filtered compensation table">
           <div className="rounded-lg border border-white/10 bg-[#090a0d]/95 p-4 shadow-2xl shadow-black/30">
+            {isLoading ? (
+              <div className="mb-4 rounded-md border border-white/10 bg-white/[0.035] p-3 text-sm text-zinc-400">
+                Loading salary data from the API contract...
+              </div>
+            ) : null}
+            {loadError ? (
+              <div className="mb-4 rounded-md border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-200">
+                {loadError}
+              </div>
+            ) : null}
             <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-7">
               <TextInput
                 label="Search"

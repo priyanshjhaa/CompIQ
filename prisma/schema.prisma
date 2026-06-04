@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Market {
+  Global
+  India
+  Hybrid
+}
+
+enum Currency {
+  USD
+  INR
+}
+
+model Company {
+  id           String             @id @default(cuid())
+  name         String
+  slug         String             @unique
+  market       Market
+  headquarters String
+  description  String
+  salaries     SalarySubmission[]
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+}
+
+model SalarySubmission {
+  id              String   @id @default(cuid())
+  companyId       String
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  role            String
+  level           String
+  levelRank       Int
+  location        String
+  market          Market
+  currency        Currency
+  base            Int
+  bonus           Int      @default(0)
+  stock           Int      @default(0)
+  totalComp       Int
+  totalCompUsd    Float
+  yearsExperience Int
+  submittedAt     DateTime @default(now())
+  verified        Boolean  @default(false)
+  normalizedKey   String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([role])
+  @@index([level])
+  @@index([location])
+  @@index([currency])
+  @@index([market])
+  @@index([totalCompUsd])
+  @@index([normalizedKey])
+}

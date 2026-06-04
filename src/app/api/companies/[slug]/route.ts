@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
-  const detail = findCompanyDetail(slug);
+  const detail = await findCompanyDetail(slug);
 
   if (!detail) {
     return NextResponse.json({ errors: ["Company not found."] }, { status: 404 });
