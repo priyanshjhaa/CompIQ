@@ -97,6 +97,22 @@ openssl rand -base64 32
 
 Restart the dev server after adding the variables.
 
+## Deploy To Vercel
+
+Set these environment variables in Vercel before deploying:
+
+- `DATABASE_URL`
+- `NEON_AUTH_BASE_URL`
+- `NEON_AUTH_COOKIE_SECRET`
+
+Recommended deployment flow:
+
+1. Run `npm run db:deploy` against the production Neon database.
+2. Run `npm run db:seed` once if the production database needs the demo dataset.
+3. Deploy with Vercel's default build command, `npm run build`.
+
+The `postinstall` script runs `prisma generate`, so Vercel has the Prisma client available during the build.
+
 ## Verify
 
 ```bash
