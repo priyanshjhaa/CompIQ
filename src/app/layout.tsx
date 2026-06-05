@@ -7,6 +7,10 @@ export const metadata: Metadata = {
   title: "CompIQ | Compensation Intelligence",
   description:
     "A level-first compensation intelligence system for global and India tech markets.",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    shortcut: ["/icon.svg"],
+  },
 };
 
 export default function RootLayout({

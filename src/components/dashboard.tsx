@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { UserMenu } from "@/components/user-menu";
 import {
@@ -63,6 +63,8 @@ export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) 
   });
   const [formStatus, setFormStatus] = useState<string>("");
   const [formTone, setFormTone] = useState<"idle" | "success" | "warning" | "error">("idle");
+  const [isSubmittingSalary, setIsSubmittingSalary] = useState(false);
+  const queryClient = useQueryClient();
   const salaryQueryString = useMemo(() => {
     const params = new URLSearchParams();
     if (filters.query) params.set("query", filters.query);
@@ -159,7 +161,7 @@ export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) 
     });
   }
 
-  function submitDraft() {
+  async function submitDraft() {
     const errors = validateSubmission(draft);
     if (errors.length > 0) {
       setFormTone("error");
@@ -170,15 +172,52 @@ export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) 
     const built = buildSubmission(draft);
     const duplicate = isLikelyDuplicate(salaries, draft);
 
-    setFormTone(duplicate ? "warning" : "success");
-    setFormStatus(
-      duplicate
-        ? "Likely duplicate detected. Backend will return 409 with the matching cohort."
-        : `Valid submission. Total comp would be ${formatMoney(
-            built.totalComp,
-            built.currency,
-          )} (${formatUsdCompact(built.totalCompUsd)} normalized).`,
-    );
+    if (duplicate) {
+      setFormTone("warning");
+      setFormStatus("Likely duplicate detected in the current cohort. Submit a different row or adjust the package details.");
+      return;
+    }
+
+    setIsSubmittingSalary(true);
+    setFormTone("idle");
+    setFormStatus("Submitting salary row...");
+
+    try {
+      const response = await fetch("/api/salaries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(draft),
+      });
+      const json = await response.json();
+
+      if (!response.ok) {
+        const message = Array.isArray(json.errors) && json.errors.length > 0
+          ? json.errors[0]
+          : "Unable to submit this salary row.";
+        setFormTone(response.status === 409 ? "warning" : "error");
+        setFormStatus(message);
+        return;
+      }
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["salaries"] }),
+        queryClient.invalidateQueries({ queryKey: ["companies"] }),
+      ]);
+
+      const persisted = json.meta?.persisted ? "Saved to the database" : "Validated against the mock data layer";
+      setFormTone("success");
+      setFormStatus(
+        `${persisted}. Total comp is ${formatMoney(
+          json.data?.totalComp ?? built.totalComp,
+          json.data?.currency ?? built.currency,
+        )} (${formatUsdCompact(json.data?.totalCompUsd ?? built.totalCompUsd)} normalized).`,
+      );
+    } catch {
+      setFormTone("error");
+      setFormStatus("Network error while submitting the salary row. Try again in a moment.");
+    } finally {
+      setIsSubmittingSalary(false);
+    }
   }
 
   return (
@@ -678,19 +717,32 @@ export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) 
               <button
                 type="button"
                 onClick={submitDraft}
-                className="mt-4 h-10 rounded-md bg-zinc-100 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-white"
+                disabled={isSubmittingSalary}
+                className="mt-4 h-10 rounded-md bg-zinc-100 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Validate submission
+                {isSubmittingSalary ? "Submitting..." : "Submit salary"}
               </button>
             </div>
             <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4 shadow-2xl shadow-black/20">
-              <h3 className="font-semibold text-zinc-50">Backend contract</h3>
-              <ul className="mt-4 grid gap-2 text-sm leading-6 text-zinc-400">
-                <li>POST /api/salaries accepts this exact draft shape.</li>
-                <li>Missing bonus or stock defaults to 0.</li>
-                <li>Invalid numbers return 400 with field errors.</li>
-                <li>Likely duplicate rows return 409.</li>
-              </ul>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="font-semibold text-zinc-50">Live ingestion</h3>
+                  <p className="mt-2 text-sm leading-6 text-zinc-400">
+                    Submissions are validated, normalized, checked for duplicates, and then reflected across explorer and company views.
+                  </p>
+                </div>
+                <Badge>POST</Badge>
+              </div>
+              <div className="mt-5 grid gap-3 text-sm text-zinc-300">
+                <div className="rounded-md border border-white/10 bg-black/20 p-3">
+                  <p className="text-xs font-medium uppercase tracking-[0.16em] text-zinc-500">Endpoint</p>
+                  <p className="mt-1 font-mono text-[#8b93ff]">/api/salaries</p>
+                </div>
+                <div className="grid gap-2 text-zinc-400">
+                  <p>Bonus and stock default to 0 when left blank.</p>
+                  <p>Invalid values return field errors; duplicate cohorts return 409.</p>
+                </div>
+              </div>
               {formStatus ? (
                 <div
                   className={`mt-4 rounded-md border p-3 text-sm ${
