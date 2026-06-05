@@ -27,7 +27,6 @@ export async function GET(request: Request) {
     meta: {
       total: rows.length,
       source: DATA_SOURCE,
-      nextBackendStep: "Replace data-access internals with Prisma query filters.",
     },
   };
 
@@ -47,7 +46,6 @@ export async function POST(request: Request) {
     meta: {
       persisted: result.persisted,
       source: DATA_SOURCE,
-      nextBackendStep: "Persist using Prisma once DATABASE_URL is configured.",
     },
   };
 

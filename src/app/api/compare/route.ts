@@ -17,7 +17,6 @@ export async function GET(request: Request) {
     data: result,
     meta: {
       source: DATA_SOURCE,
-      nextBackendStep: "Resolve ids from database and compute cohort insights.",
     },
   };
 

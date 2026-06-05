@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Bar, Badge, Section, Stat } from "@/components/ui";
-import { formatMoney, formatUsdCompact, median } from "@/lib/compensation";
+import { formatMoney, formatUsdCompact } from "@/lib/compensation";
 import { getCompanyDetail } from "@/lib/data-access";
 
 export default async function CompanyPage({
@@ -119,7 +119,7 @@ export default async function CompanyPage({
           </div>
         </Section>
 
-        <Section title="Submitted Compensation Rows" eyebrow="Future API response shape">
+        <Section title="Submitted Compensation Rows" eyebrow="Structured compensation data">
           <div className="overflow-x-auto rounded-lg border border-white/10 bg-[#090a0d]/95 shadow-2xl shadow-black/20">
             <table className="w-full min-w-[820px] border-collapse text-left text-sm">
               <thead>
@@ -211,24 +211,6 @@ export default async function CompanyPage({
                 </div>
               </div>
             ))}
-          </div>
-        </Section>
-
-        <Section title="Backend Handoff" eyebrow="Ready for Prisma">
-          <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4 text-sm leading-6 text-zinc-400 shadow-2xl shadow-black/20">
-            <p>
-              This page consumes the same company detail shape expected from
-              GET /api/companies/{summary.slug}: summary metadata, raw salary
-              rows, and derived level bands. The Prisma implementation can reuse
-              the mock seed data and keep the frontend unchanged.
-            </p>
-            <p className="mt-3">
-              Company median in this view is{" "}
-              <strong className="text-zinc-50">
-                {formatUsdCompact(median(rows.map((row) => row.totalCompUsd)))}
-              </strong>
-              , calculated from normalized USD totals.
-            </p>
           </div>
         </Section>
       </div>

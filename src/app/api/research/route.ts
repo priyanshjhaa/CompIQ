@@ -6,7 +6,6 @@ export async function GET() {
     data: listResearchRows(),
     meta: {
       source: DATA_SOURCE,
-      nextBackendStep: "Keep static or move into a research_observations table.",
     },
   });
 }

@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { UserMenu } from "@/components/user-menu";
 import {
   buildSubmission,
   formatMoney,
   formatUsdCompact,
-  filterSalaries,
   isLikelyDuplicate,
   median,
   validateSubmission,
@@ -24,6 +24,13 @@ import type {
 } from "@/lib/types";
 import { Badge, Bar, CompanyLink, Section, SelectField, Stat, TextInput } from "./ui";
 
+async function fetchJson<T>(url: string): Promise<T> {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error("Unable to load dashboard data.");
+  const json = await response.json();
+  return json.data ?? [];
+}
+
 const defaultFilters: SalaryFilters = {
   query: "",
   company: "",
@@ -33,6 +40,10 @@ const defaultFilters: SalaryFilters = {
   currency: "All",
   market: "All",
 };
+
+const EMPTY_SALARIES: SalarySubmission[] = [];
+const EMPTY_COMPANIES: CompanySummary[] = [];
+const EMPTY_RESEARCH_ROWS: ResearchRow[] = [];
 
 export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) {
   const [filters, setFilters] = useState<SalaryFilters>(defaultFilters);
@@ -52,58 +63,51 @@ export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) 
   });
   const [formStatus, setFormStatus] = useState<string>("");
   const [formTone, setFormTone] = useState<"idle" | "success" | "warning" | "error">("idle");
-  const [salaries, setSalaries] = useState<SalarySubmission[]>([]);
-  const [companies, setCompanies] = useState<CompanySummary[]>([]);
-  const [researchRows, setResearchRows] = useState<ResearchRow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  const salaryQueryString = useMemo(() => {
+    const params = new URLSearchParams();
+    if (filters.query) params.set("query", filters.query);
+    if (filters.company) params.set("company", filters.company);
+    if (filters.role) params.set("role", filters.role);
+    if (filters.level) params.set("level", filters.level);
+    if (filters.location) params.set("location", filters.location);
+    if (filters.currency !== "All") params.set("currency", filters.currency);
+    if (filters.market !== "All") params.set("market", filters.market);
+    params.set("sort", sortKey);
+    return params.toString();
+  }, [filters, sortKey]);
 
-  useEffect(() => {
-    let active = true;
+  const salariesQuery = useQuery({
+    queryKey: ["salaries", "all"],
+    queryFn: () => fetchJson<SalarySubmission[]>("/api/salaries"),
+  });
+  const filteredSalariesQuery = useQuery({
+    queryKey: ["salaries", "filtered", salaryQueryString],
+    queryFn: () => fetchJson<SalarySubmission[]>(`/api/salaries?${salaryQueryString}`),
+  });
+  const companiesQuery = useQuery({
+    queryKey: ["companies"],
+    queryFn: () => fetchJson<CompanySummary[]>("/api/companies"),
+  });
+  const researchQuery = useQuery({
+    queryKey: ["research"],
+    queryFn: () => fetchJson<ResearchRow[]>("/api/research"),
+  });
 
-    async function loadDashboardData() {
-      try {
-        setIsLoading(true);
-        setLoadError("");
-        const [salaryResponse, companyResponse, researchResponse] = await Promise.all([
-          fetch("/api/salaries"),
-          fetch("/api/companies"),
-          fetch("/api/research"),
-        ]);
-
-        if (!salaryResponse.ok || !companyResponse.ok || !researchResponse.ok) {
-          throw new Error("Unable to load dashboard data.");
-        }
-
-        const [salaryJson, companyJson, researchJson] = await Promise.all([
-          salaryResponse.json(),
-          companyResponse.json(),
-          researchResponse.json(),
-        ]);
-
-        if (!active) return;
-        setSalaries(salaryJson.data ?? []);
-        setCompanies(companyJson.data ?? []);
-        setResearchRows(researchJson.data ?? []);
-      } catch (error) {
-        if (!active) return;
-        setLoadError(error instanceof Error ? error.message : "Unable to load dashboard data.");
-      } finally {
-        if (active) setIsLoading(false);
-      }
-    }
-
-    loadDashboardData();
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const filteredRows = useMemo(
-    () => filterSalaries(salaries, filters, sortKey),
-    [salaries, filters, sortKey],
-  );
+  const salaries = salariesQuery.data ?? EMPTY_SALARIES;
+  const filteredRows = filteredSalariesQuery.data ?? EMPTY_SALARIES;
+  const companies = companiesQuery.data ?? EMPTY_COMPANIES;
+  const researchRows = researchQuery.data ?? EMPTY_RESEARCH_ROWS;
+  const isLoading =
+    salariesQuery.isLoading ||
+    filteredSalariesQuery.isLoading ||
+    companiesQuery.isLoading ||
+    researchQuery.isLoading;
+  const loadError = [
+    salariesQuery.error,
+    filteredSalariesQuery.error,
+    companiesQuery.error,
+    researchQuery.error,
+  ].find(Boolean);
 
   const selectedRows = selectedIds
     .map((id) => salaries.find((row) => row.id === id))
@@ -272,7 +276,7 @@ export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) 
             </div>
             <div className="rounded-md border border-white/10 bg-[#0b0c10] p-4">
               <p className="text-xs font-medium text-zinc-500">Review story</p>
-              <p className="mt-2 font-mono text-sm text-[#8b93ff]">Frontend first → Prisma next</p>
+              <p className="mt-2 font-mono text-sm text-[#8b93ff]">Production-ready data flow</p>
             </div>
           </div>
         </div>
@@ -282,12 +286,12 @@ export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) 
           <div className="rounded-lg border border-white/10 bg-[#090a0d]/95 p-4 shadow-2xl shadow-black/30">
             {isLoading ? (
               <div className="mb-4 rounded-md border border-white/10 bg-white/[0.035] p-3 text-sm text-zinc-400">
-                Loading salary data from the API contract...
+                Loading compensation data...
               </div>
             ) : null}
             {loadError ? (
               <div className="mb-4 rounded-md border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-200">
-                {loadError}
+                {loadError instanceof Error ? loadError.message : "Unable to load dashboard data."}
               </div>
             ) : null}
             <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-7">
@@ -432,7 +436,7 @@ export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) 
                   </p>
                   <p>
                     Selection rule: newest pick replaces the oldest after three
-                    profiles, matching the planned compare API contract.
+                    profiles, matching the comparison workflow.
                   </p>
                 </div>
               ) : (
@@ -489,7 +493,7 @@ export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) 
           </div>
         </Section>
 
-        <Section title="Company Intelligence" eyebrow="Database-backed page contract">
+        <Section title="Company Intelligence" eyebrow="Company compensation intelligence">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {companies.map((company) => {
               const rows = salaries.filter((row) => row.companyId === company.id);
@@ -592,7 +596,7 @@ export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) 
         </Section>
 
         <div id="submit" />
-        <Section title="Salary Submission" eyebrow="Frontend validation now, API later">
+        <Section title="Salary Submission" eyebrow="Validated salary ingestion">
           <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
             <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4 shadow-2xl shadow-black/20">
               <div className="grid gap-3 md:grid-cols-3">

@@ -79,7 +79,6 @@ export type ApiMeta = {
   source: "mock" | "database";
   total?: number;
   persisted?: boolean;
-  nextBackendStep?: string;
 };
 
 export type ApiSuccess<T> = {

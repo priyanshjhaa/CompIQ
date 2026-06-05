@@ -17,7 +17,6 @@ export async function GET(
     data: detail,
     meta: {
       source: DATA_SOURCE,
-      nextBackendStep: "Fetch company, salary rows, and derived bands via Prisma.",
     },
   };
 

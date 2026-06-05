@@ -11,6 +11,7 @@ import {
   toUsd,
 } from "./compensation";
 import { hasDatabaseUrl, prisma } from "./prisma";
+import type { Prisma } from "@prisma/client";
 import { salaryIngestionSchema } from "./validation";
 import type {
   ApiError,
@@ -132,11 +133,60 @@ export function getMockDashboardData(): DashboardData {
   };
 }
 
+function salaryWhere(filters: SalaryFilters): Prisma.SalarySubmissionWhereInput {
+  const where: Prisma.SalarySubmissionWhereInput = {};
+  const and: Prisma.SalarySubmissionWhereInput[] = [];
+
+  if (filters.company) {
+    and.push({ company: { name: { equals: filters.company, mode: "insensitive" } } });
+  }
+  if (filters.role) {
+    and.push({ role: { equals: filters.role, mode: "insensitive" } });
+  }
+  if (filters.level) {
+    and.push({ level: { equals: filters.level, mode: "insensitive" } });
+  }
+  if (filters.location) {
+    and.push({ location: { equals: filters.location, mode: "insensitive" } });
+  }
+  if (filters.currency !== "All") {
+    and.push({ currency: filters.currency });
+  }
+  if (filters.market !== "All") {
+    and.push({ market: filters.market });
+  }
+  if (filters.query.trim()) {
+    const query = filters.query.trim();
+    and.push({
+      OR: [
+        { role: { contains: query, mode: "insensitive" } },
+        { level: { contains: query, mode: "insensitive" } },
+        { location: { contains: query, mode: "insensitive" } },
+        { company: { name: { contains: query, mode: "insensitive" } } },
+      ],
+    });
+  }
+
+  if (and.length > 0) where.AND = and;
+  return where;
+}
+
+function salaryOrderBy(sortKey: SortKey): Prisma.SalarySubmissionOrderByWithRelationInput[] {
+  if (sortKey === "base") return [{ base: "desc" }];
+  if (sortKey === "levelRank") return [{ levelRank: "asc" }, { totalCompUsd: "desc" }];
+  if (sortKey === "company") return [{ company: { name: "asc" } }, { totalCompUsd: "desc" }];
+  return [{ totalCompUsd: "desc" }];
+}
+
 export async function listSalaries(filters: SalaryFilters, sortKey: SortKey) {
   if (!hasDatabaseUrl()) return filterSalaries(salarySubmissions, filters, sortKey);
 
-  const rows = await prisma.salarySubmission.findMany({ include: { company: true } });
-  return filterSalaries(rows.map(dbSalaryToContract), filters, sortKey);
+  const rows = await prisma.salarySubmission.findMany({
+    where: salaryWhere(filters),
+    orderBy: salaryOrderBy(sortKey),
+    include: { company: true },
+  });
+  return rows.map(dbSalaryToContract);
 }
 
 export async function getSalaryList(filters: SalaryFilters, sortKey: SortKey) {

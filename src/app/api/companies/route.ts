@@ -7,7 +7,6 @@ export async function GET() {
     data: await listCompanies(),
     meta: {
       source: DATA_SOURCE,
-      nextBackendStep: "Group salary submissions by company with Prisma.",
     },
   };
 
