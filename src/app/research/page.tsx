@@ -7,7 +7,7 @@ export default function ResearchPage() {
   return (
     <main className="app-gradient-flow min-h-screen text-zinc-50">
       <header className="border-b border-white/10 bg-[#050506]/70 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="flex h-14 w-full items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-10">
           <Link href="/dashboard" className="flex items-center gap-2">
             <span className="grid h-6 w-6 place-items-center rounded-md border border-white/10 bg-white/[0.06] text-[11px] font-semibold text-[#e4f222]">C</span>
             <span className="text-sm font-semibold text-zinc-100">CompIQ</span>
@@ -17,7 +17,7 @@ export default function ResearchPage() {
       </header>
 
       <section className="border-b border-white/10">
-        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="w-full px-4 py-14 sm:px-6 lg:px-8 xl:px-10">
           <p className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-zinc-400">
             Competitive research
           </p>
@@ -30,7 +30,7 @@ export default function ResearchPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <section className="w-full px-4 py-10 sm:px-6 lg:px-8 xl:px-10">
         <div className="mb-4">
           <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#8b93ff]">Mandatory research</p>
           <h2 className="mt-2 text-xl font-semibold text-zinc-50">Research Comparison Sheet</h2>

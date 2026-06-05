@@ -1,11 +1,9 @@
 "use client";
 
-import { createAuthClient } from "@neondatabase/auth/next";
 import { NeonAuthUIProvider } from "@neondatabase/auth/react/ui";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-
-const authClient = createAuthClient();
+import { authClient } from "@/lib/auth/client";
 
 export function AuthProvider({
   children,

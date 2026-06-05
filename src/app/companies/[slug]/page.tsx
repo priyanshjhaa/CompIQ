@@ -27,7 +27,7 @@ export default async function CompanyPage({
   return (
     <main className="app-gradient-flow min-h-screen">
       <section className="border-b border-white/10">
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="w-full px-4 py-10 sm:px-6 lg:px-8 xl:px-10">
           <Link
             href="/dashboard"
             className="text-sm font-semibold text-[#e4f222] underline decoration-white/20 underline-offset-4"
@@ -70,7 +70,7 @@ export default async function CompanyPage({
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-10">
         <Section title="Level-Wise Compensation Bands" eyebrow="Median TC by seniority">
           <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4 shadow-2xl shadow-black/20">
             <div className="grid gap-5">

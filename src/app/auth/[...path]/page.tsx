@@ -13,7 +13,7 @@ export default async function AuthPage({
   if (!isNeonAuthConfigured) {
     return (
       <main className="app-gradient-flow min-h-screen text-zinc-50">
-        <section className="mx-auto grid min-h-screen max-w-3xl place-items-center px-4 py-16 sm:px-6 lg:px-8">
+        <section className="grid min-h-screen w-full place-items-center px-4 py-16 sm:px-6 lg:px-8 xl:px-10">
           <div className="rounded-lg border border-white/10 bg-[#090a0d]/90 p-6 shadow-2xl shadow-black/30 backdrop-blur-xl">
             <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#8b93ff]">Neon Auth</p>
             <h1 className="mt-4 text-3xl font-semibold tracking-[-0.02em] text-zinc-50">Auth is wired, env vars are next.</h1>
@@ -29,7 +29,7 @@ export default async function AuthPage({
 
   return (
     <main className="app-gradient-flow min-h-screen text-zinc-50">
-      <section className="mx-auto grid min-h-screen max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
+      <section className="grid min-h-screen w-full gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8 xl:px-10">
         <div className="flex flex-col justify-center">
           <Link href="/" className="flex items-center gap-2">
             <span className="grid h-7 w-7 place-items-center rounded-md border border-white/10 bg-white/[0.06] text-xs font-semibold text-[#e4f222]">C</span>

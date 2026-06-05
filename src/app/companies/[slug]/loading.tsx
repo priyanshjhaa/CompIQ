@@ -1,7 +1,7 @@
 export default function CompanyLoading() {
   return (
     <main className="app-gradient-flow min-h-screen text-zinc-50">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="w-full px-4 py-10 sm:px-6 lg:px-8 xl:px-10">
         <div className="h-5 w-32 animate-pulse rounded-md bg-white/10" />
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <div>

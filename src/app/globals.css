@@ -12,6 +12,13 @@
   --color-foreground: var(--foreground);
 }
 
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+  background: var(--background);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -33,6 +40,7 @@ body {
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  min-height: 100dvh;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 28rem),
     #050506;
@@ -41,7 +49,7 @@ body {
 .app-gradient-flow::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -1px;
   z-index: -2;
   pointer-events: none;
   background:
@@ -58,7 +66,7 @@ body {
 .app-gradient-flow::after {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -1px;
   z-index: -1;
   pointer-events: none;
   background:

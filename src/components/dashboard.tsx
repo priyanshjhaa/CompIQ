@@ -180,7 +180,7 @@ export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) 
   return (
     <main className="app-gradient-flow min-h-screen">
       <header className="sticky top-0 z-30 border-b border-white/10 bg-[#050506]/70 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="flex h-14 w-full items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-10">
           <Link href="/dashboard" className="flex items-center gap-2">
             <span className="grid h-6 w-6 place-items-center rounded-md border border-white/10 bg-white/[0.06] text-[11px] font-semibold text-[#e4f222]">
               C
@@ -211,7 +211,7 @@ export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) 
       </header>
 
       <section className="border-b border-white/10">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-6 lg:grid-cols-[1.25fr_0.75fr] lg:px-8 lg:py-20">
+        <div className="grid w-full gap-8 px-4 py-16 sm:px-6 lg:grid-cols-[1.25fr_0.75fr] lg:px-8 lg:py-20 xl:px-10">
           <div>
             <p className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-zinc-400 shadow-[0_1px_0_rgba(255,255,255,0.05)_inset]">
               Track C · Full Stack Engineer
@@ -259,7 +259,7 @@ export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) 
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-10">
         <div className="mt-8 rounded-lg border border-white/10 bg-white/[0.03] p-3 shadow-2xl shadow-black/40">
           <div className="grid gap-3 md:grid-cols-3">
             <div className="rounded-md border border-white/10 bg-[#0b0c10] p-4">

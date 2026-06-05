@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function AuthSetupPage() {
   return (
     <main className="app-gradient-flow min-h-screen text-zinc-50">
-      <section className="mx-auto grid min-h-screen max-w-3xl place-items-center px-4 py-16 sm:px-6 lg:px-8">
+      <section className="grid min-h-screen w-full place-items-center px-4 py-16 sm:px-6 lg:px-8 xl:px-10">
         <div className="rounded-lg border border-white/10 bg-[#090a0d]/90 p-6 shadow-2xl shadow-black/30 backdrop-blur-xl">
           <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#8b93ff]">
             Neon Auth setup

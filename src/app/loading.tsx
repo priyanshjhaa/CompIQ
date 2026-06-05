@@ -1,7 +1,7 @@
 export default function Loading() {
   return (
     <main className="app-gradient-flow min-h-screen text-zinc-50">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="w-full px-4 py-10 sm:px-6 lg:px-8 xl:px-10">
         <div className="h-6 w-28 animate-pulse rounded-md bg-white/10" />
         <div className="mt-10 h-14 w-2/3 animate-pulse rounded-md bg-white/10" />
         <div className="mt-8 grid gap-4 lg:grid-cols-3">
