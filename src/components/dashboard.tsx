@@ -256,10 +256,7 @@ export function Dashboard({ showUserMenu = false }: { showUserMenu?: boolean }) 
       <section className="border-b border-white/10">
         <div className="grid w-full gap-8 px-4 py-16 sm:px-6 lg:grid-cols-[1.25fr_0.75fr] lg:px-8 lg:py-20 xl:px-10">
           <div>
-            <p className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-zinc-400 shadow-[0_1px_0_rgba(255,255,255,0.05)_inset]">
-              Track C · Full Stack Engineer
-            </p>
-            <h1 className="mt-6 max-w-4xl text-4xl font-semibold leading-[1.02] tracking-[-0.02em] text-zinc-50 sm:text-6xl">
+            <h1 className="max-w-4xl text-4xl font-semibold leading-[1.02] tracking-[-0.02em] text-zinc-50 sm:text-6xl">
               Compensation intelligence built around levels, not titles.
             </h1>
             <p className="mt-5 max-w-3xl text-base leading-7 text-zinc-400 sm:text-lg">
